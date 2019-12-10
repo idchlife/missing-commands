@@ -126,7 +126,7 @@ namespace MyApp {
       services.AddScoped<EmailsCommandBag>();
 
       // Just for example we are adding another command bag
-      services.AddScoped<CleanupCommandBag>();
+      services.AddScoped<DatabaseCleanupCommandBag>();
 
       // This is where missing commands would know which
       // services are registered as command bags.
