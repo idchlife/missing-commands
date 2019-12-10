@@ -115,29 +115,38 @@ After creating your first command bag we need to register it as usual service AN
 ```csharp
 // Startup.cs
 
-  public void ConfigureServices(IServiceCollection services) {
-    // Your usual services stuff
+namespace MyApp {
+  public class Startup {
+    public void ConfigureServices(IServiceCollection services) {
+      // Your usual services stuff
+      // ...
+
+      // Here you register your command bag as service.
+      // You can use whatever service scope you need, of course
+      services.AddScoped<EmailsCommandBag>();
+
+      // Just for example we are adding another command bag
+      services.AddScoped<CleanupCommandBag>();
+
+      // This is where missing commands would know which
+      // services are registered as command bags.
+      // Notice .AddCommandBag method string argument:
+      // this is prefix, which you would use so
+      // missing commands know which command bag to use
+      // E.g: database-cleanup:remove-empty-shopping-carts
+      services.AddMissingCommands(
+        config => config
+          .AddCommandBag<EmailCommandBag>("email")
+          .AddCommandBag<DatabaseCleanupCommandBag>("database-cleanup")
+      );
+    }
+
+    // Other methods in Startup.cs
     // ...
-
-    // Here you register your command bag as service.
-    // You can use whatever service scope you need, of course
-    services.AddScoped<EmailsCommandBag>();
-
-    // Just for example we are adding another command bag
-    services.AddScoped<CleanupCommandBag>();
-
-    // This is where missing commands would know which
-    // services are registered as command bags.
-    // Notice .AddCommandBag method string argument:
-    // this is prefix, which you would use so
-    // missing commands know which command bag to use
-    // E.g: database-cleanup:remove-empty-shopping-carts
-    services.AddMissingCommands(
-      config => config
-        .AddCommandBag<EmailCommandBag>("email")
-        .AddCommandBag<DatabaseCleanupCommandBag>("database-cleanup")
-    );
   }
+}
+
+
 
 ```
 
@@ -162,6 +171,6 @@ dotnet run cli cleanup:release-virtual-memory
 
 ## Release history
 
-#### 0.1.0 Initial release of library
+#### 0.1.0 Initial release of library [11.12.2019]
 - Ability to use command bags with method as commands
 - As simple as it gets, without any input arguments/options
