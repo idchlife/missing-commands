@@ -15,12 +15,14 @@ namespace MissingCommands.Services {
     public CommandResolverConfiguration() {
     }
 
-    public void AddCommandBag<TypeOfCommand>(string prefix) where TypeOfCommand : class {
+    public CommandResolverConfiguration AddCommandBag<TypeOfCommand>(string prefix) where TypeOfCommand : class {
       if (commandBags.ContainsKey(prefix)) {
         throw new CommandBagAlreadyRegistered(prefix);
       }
 
       commandBags.Add(prefix, typeof(TypeOfCommand));
+
+      return this;
     }
 
     public Type GetCommandBagType(string prefix) {
