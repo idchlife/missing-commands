@@ -7,10 +7,29 @@
     <Authors>Igor Andreev</Authors>
     <Company>Igor Andreev</Company>
     <PackageTags>cli;console;.net;asp.net;mvc;webapi</PackageTags>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+
+    <Description>
+      Package for using with ASP.NET projects to provide cli commands feature, e.g.: dotnet run cli emails:send-gifts
+    </Description>
+
+    <PackageSummary>
+      Use cli commands in ASP.NET project (like in django/flask/symfony): dotnet run cli prefix:custom-command
+    </PackageSummary>
+
+    <RepositoryURL>
+      https://github.com/idchlife/missing-commands
+    </RepositoryURL>
+    <RepositoryType>git</RepositoryType>
+
+    <PackageReleaseNotes>
+      Initial version with simple cli commands
+    </PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.0.0" />
+    <None Include="LICENSE.md" Pack="true" PackagePath="" />
   </ItemGroup>
 
 </Project>
