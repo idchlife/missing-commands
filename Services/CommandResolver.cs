@@ -6,32 +6,33 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MissingCommands.Services {
   public class InvalidCommandFormat : Exception {
-    public InvalidCommandFormat(string entryPoint) : base(String.Format(
-      "It seems argument {0} does not comply to format prefix:command. Cannot resolve.",
-      entryPoint
-    )) {}
+    public InvalidCommandFormat(string entryPoint) : base(
+      $"It seems argument {entryPoint} does not comply to format prefix:command. Cannot resolve."
+    ) {}
   }
 
   public class CommandBagNotFound : Exception {
-    public CommandBagNotFound(string prefix) : base(String.Format(
-      "Command bag by prefix {0} was not found. Either prefix wrong or command bag was not registered in MissingCommands",
-      prefix
-    )) {}
+    public CommandBagNotFound(string prefix) : base(
+      $"Command bag by prefix {prefix} was not found. Either prefix wrong or command bag was not registered in MissingCommands"
+    ) {}
   }
 
   public class CommandBagMethodNotFound : Exception {
-    public CommandBagMethodNotFound(string command, string methodName) : base(String.Format(
-      "Command bag method {1} for command {0} was not found",
-      command,
-      methodName
-    )) {}
+    public CommandBagMethodNotFound(string command, string methodName) : base(
+      $"Command bag method {methodName} for command {command} was not found"
+    ) {}
   }
 
   public class CommandBagServiceNotRegistered : Exception {
-    public CommandBagServiceNotRegistered(string type) : base(String.Format(
-      "Command bag class {0} was not registered in you service container. Remember, you should add your command bag as service in your container",
-      type
-    )) {}
+    public CommandBagServiceNotRegistered(string type) : base(
+      $"Command bag class {type} was not registered in you service container. Remember, you should add your command bag as service in your container"
+    ) {}
+  }
+
+  public class ErrorParsingCliArguments : Exception {
+    public ErrorParsingCliArguments(Exception e) : base(
+      $"While trying to parse cli arguments and getting reflection of command bag method encountered an exception. Here it is: {e.ToString()}"
+    ) {}
   }
 
   public class CommandResolver {
@@ -64,6 +65,8 @@ namespace MissingCommands.Services {
       var prefix = blob[0];
       var command = blob[1];
 
+      var cliArguments = blob.Skip(2).ToArray();
+
       var bagType = config.GetCommandBagType(prefix);
 
       if (bagType == null) {
@@ -86,7 +89,41 @@ namespace MissingCommands.Services {
           throw new CommandBagServiceNotRegistered(bagType.ToString());
         }
 
-        method.Invoke(bagInstance, null);
+        var actualMethodArguments = new List<object>();
+
+        var parameters = method.GetParameters();
+
+        try {
+          for (int i = 0; i < parameters.Length; i++) {
+            var p = parameters[i];
+
+            var cliArgument = cliArguments.ElementAtOrDefault(i);
+
+            var methodParameterType = p.GetType();
+            var methodParameterDefaultValue = p.HasDefaultValue ? p.DefaultValue : null;
+
+            var actualValue = cliArgument == null ? methodParameterDefaultValue : null;
+
+            if (actualValue == null) {
+              throw new Exception($"Method {method.Name} argument has no default value and also there is no provided argument via cli");
+            } else {
+              try {
+                actualMethodArguments.Add(
+                  Convert.ChangeType(actualValue, p.GetType())
+                );
+              } catch (Exception e) {
+                throw new Exception(
+                  $"Cannot cast to needed type for method argument! Original cli argument: {cliArgument}, and needed type: {p.GetType().ToString()}"
+                );
+              }
+            }
+          }
+        } catch (Exception e) {
+          throw new ErrorParsingCliArguments(e);
+        }
+
+
+        method.Invoke(bagInstance, actualMethodArguments.ToArray());
       }
 
       Console.WriteLine("Everything is good!");
