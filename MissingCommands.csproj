@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>MissingCommands</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Authors>Igor Andreev</Authors>
     <Company>Igor Andreev</Company>
     <PackageTags>cli;console;.net;asp.net;mvc;webapi</PackageTags>

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using Microsoft.Extensions.Hosting;
 using MissingCommands.Services;
+using MissingCommands.Helpers;
 
 namespace Microsoft.Extensions.Hosting {
   public static class HostingExtensions {
@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Hosting {
           listArgs.RemoveAt(0);
 
           var fixedArrayArgs = listArgs.ToArray();
-
+          
           if (resolver != null) resolver.ResolveCommand(fixedArrayArgs);
           return;
         }

@@ -65,7 +65,8 @@ namespace MissingCommands.Services {
       var prefix = blob[0];
       var command = blob[1];
 
-      var cliArguments = blob.Skip(2).ToArray();
+      // We are omitting first argument because it's bag and method name
+      var cliArguments = args.Skip(1).ToArray();
 
       var bagType = config.GetCommandBagType(prefix);
 
@@ -102,14 +103,16 @@ namespace MissingCommands.Services {
             var methodParameterType = p.GetType();
             var methodParameterDefaultValue = p.HasDefaultValue ? p.DefaultValue : null;
 
-            var actualValue = cliArgument == null ? methodParameterDefaultValue : null;
+            var actualValue = cliArgument != null ? cliArgument : methodParameterDefaultValue;
 
             if (actualValue == null) {
-              throw new Exception($"Method {method.Name} argument has no default value and also there is no provided argument via cli");
+              throw new Exception(
+                $"Method {method.Name} argument has no default value and also there is no provided argument via cli. Cli arguments separated for method: {String.Join(", ", cliArguments)}. All arguments provided in cli: {String.Join(", ", args)}"
+              );
             } else {
               try {
                 actualMethodArguments.Add(
-                  Convert.ChangeType(actualValue, p.GetType())
+                  Convert.ChangeType(actualValue, p.ParameterType)
                 );
               } catch (Exception e) {
                 throw new Exception(
@@ -122,16 +125,11 @@ namespace MissingCommands.Services {
           throw new ErrorParsingCliArguments(e);
         }
 
-
         method.Invoke(bagInstance, actualMethodArguments.ToArray());
       }
 
-      Console.WriteLine("Everything is good!");
+      // Console.WriteLine("Everything is good!");
     }
-
-    // private object GetCommandBagService(Type type) {
-      
-    // }
 
     private string GetMethodNameFromArg(string arg) {
       return DashCaseToPascalCase(arg);

@@ -45,7 +45,9 @@ dotnet add package MissingCommands
 ```
 
 ## Usage
-After installation you should use MissingCommands in your Program.cs file
+After installation you should use MissingCommands in your Program.cs file.
+
+[new in 0.1.1] You can also configure here MissingCommands so you would be able to check in Startup.cs file whether application is in CLI mode (useful if you don't want to start some services or in cli mode you want to use different services).
 
 ```csharp
 // Program.cs
@@ -69,8 +71,14 @@ namespace MyApp {
       // running your web app and choose, if there is cli activation
       // keyword (default `cli`)
     }
-
-    // ...
+    
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+      Host.CreateDefaultBuilder(args)
+        .ConfigureMissingCommands(config => {
+          // [new in 0.1.1] you should enable this to check in Startup.cs if app is in CLI mode
+          config.EnableServiceCliChecker(args);
+        })
+        // ...
   }
 }
 
@@ -106,11 +114,21 @@ namespace MyApp.Commands {
       // Here you are sending those emails for users
       // gathered from database
     }
+    
+    // [new in 0.1.1] now you can use arguments!
+    // you would be able to use it like this
+    // e.g.: dotnet run cli emails:add-new-npc Tom 25
+    public void AddNewNpc(string name, int age) {
+      // ...
+    }
   }
 }
 ```
 
 After creating your first command bag we need to register it as usual service AND register it in the missing commands:
+
+NOTE:
+[new in 0.1.1] Here, if you made all needed preparations for this (see above when configuring Program.cs) you would be able to check whether app is in CLI mode.
 
 ```csharp
 // Startup.cs
@@ -127,6 +145,12 @@ namespace MyApp {
 
       // Just for example we are adding another command bag
       services.AddScoped<DatabaseCleanupCommandBag>();
+
+      if (services.IsMissingCommandsCli()) {
+        // [new in 0.1.1]
+        // You can do anything here what you want to do only in
+        // cli mode
+      }
 
       // This is where missing commands would know which
       // services are registered as command bags.
@@ -158,18 +182,28 @@ If you have method ReleaseVirtualMemory, it should be written in kebab-case:
 
     release-virtual-memory
 
+
 So if you have command bag CleanupCommandBag with prefix "cleanup" and method .ReleaseVirtualMemory() you would call it like this:
 
 ```bash
 dotnet run cli cleanup:release-virtual-memory
+
+[new in 0.1.1] don't forget about arguments! you can use them now too.
+dotnet run cli cleanup:release-virtual-memory-for-days 4
 ```
 
 ## Todo
 
-- [ ] Add arguments to commands (prefix:command arg1 arg2)
+- [x] Add arguments to commands (prefix:command arg1 arg2) (now accepts primitive types string/int/float/bool as true/false string)
+- [ ] Add more complex command line arguments, like dates, params with lists etc.
 - [ ] Add options to commands (prefix:command --option1 --option2 value)
 
 ## Release history
+
+#### 0.1.1 Update with simple arguments and cli checker in Startup.cs file [07.02.2020]
+- Ability can use simple arguments now: string, int, float, bool
+- It's now possible to check if cli is in use in Startup.cs in ConfigureServices (useful when you don't want hosting/background services to start when using just cli)
+
 
 #### 0.1.0 Initial release of library [11.12.2019]
 - Ability to use command bags with method as commands

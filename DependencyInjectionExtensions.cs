@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using MissingCommands.Services;
+using MissingCommands.Helpers;
 
 namespace Microsoft.Extensions.DependencyInjection {
   public static class DependencyInjectionExtensions {
@@ -24,6 +25,12 @@ namespace Microsoft.Extensions.DependencyInjection {
       services.AddSingleton<CommandResolver>();
 
       return services;
+    }
+
+    public static bool IsMissingCommandsCli(
+      this IServiceCollection services
+    ) {
+      return RuntimeChecker.IsCli;
     }
   }
 }
