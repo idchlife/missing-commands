@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Hosting {
 
           var fixedArrayArgs = listArgs.ToArray();
           
-          if (resolver != null) resolver.ResolveCommand(fixedArrayArgs);
+          if (resolver != null) resolver.ResolveCommand(fixedArrayArgs).Wait();
           return;
         }
       }

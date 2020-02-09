@@ -200,6 +200,9 @@ dotnet run cli cleanup:release-virtual-memory-for-days 4
 
 ## Release history
 
+#### 0.2.0 Proper version bump (since new features were introduced in 0.1.1 it actually should be 0.2.0) + async commands
+- Now command bag methods can be async. Just have return type Task :D
+
 #### 0.1.1 Update with simple arguments and cli checker in Startup.cs file [07.02.2020]
 - Ability can use simple arguments now: string, int, float, bool
 - It's now possible to check if cli is in use in Startup.cs in ConfigureServices (useful when you don't want hosting/background services to start when using just cli)

@@ -1,6 +1,7 @@
+using System;
+using System.Threading.Tasks;
 using System.Reflection;
 using System.Collections.Generic;
-using System;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -49,7 +50,7 @@ namespace MissingCommands.Services {
       this.config = config;
     }
 
-    public void ResolveCommand(string[] args) {
+    public async Task ResolveCommand(string[] args) {
       var entryPoint = args[0];
 
       if (!entryPoint.Contains(":")) {
@@ -125,7 +126,11 @@ namespace MissingCommands.Services {
           throw new ErrorParsingCliArguments(e);
         }
 
-        method.Invoke(bagInstance, actualMethodArguments.ToArray());
+        if (method.ReturnType == typeof(Task)) {
+          await (dynamic) method.Invoke(bagInstance, actualMethodArguments.ToArray());
+        } else {
+          method.Invoke(bagInstance, actualMethodArguments.ToArray());
+        }
       }
 
       // Console.WriteLine("Everything is good!");
